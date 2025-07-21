@@ -4,7 +4,7 @@ enum TopLogPosition {
   pos3(250),
   pos4(340);
 
-  
+
   final int eggPos;
 
    // 50, 100, 250, 340,

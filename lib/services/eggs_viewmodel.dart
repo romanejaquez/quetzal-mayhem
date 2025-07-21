@@ -11,4 +11,8 @@ class EggsViewmodel extends StateNotifier<List<Widget>> {
   void removeEgg(Widget egg) {
     state = state.where((e) => e == egg).toList();
   }
+
+  void clearEggs() {
+    state = [];
+  }
 }

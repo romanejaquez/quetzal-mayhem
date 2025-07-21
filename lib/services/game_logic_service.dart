@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:quetzalmayhem/models/enums.dart';
+import 'package:quetzalmayhem/pages/game_page.dart';
 import 'package:quetzalmayhem/providers/game_providers.dart';
+import 'package:quetzalmayhem/services/game_controller_service.dart';
+import 'package:quetzalmayhem/services/utils.dart';
 
 class GameLogicService {
 
@@ -17,8 +21,8 @@ class GameLogicService {
   GameLogicService(this.ref);
 
   Timer loopTimer = Timer(0.seconds, () {});
-  
   Timer topTimer = Timer(Duration.zero, () {});
+  Timer eggPosTimer = Timer(Duration.zero, () {});
   Timer countdown = Timer(Duration.zero, () {});
 
   Timer gameTimer = Timer(Duration.zero, () {});
@@ -44,7 +48,6 @@ class GameLogicService {
   }
 
   void startGameLoop() {
-    //ref.read(gameStartedFlagProvider.notifier).state = true;
 
     loopTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (gameStopped) {
@@ -82,6 +85,8 @@ class GameLogicService {
       }
     }
 
+    ref.read(scoreProvider.notifier).state = ref.read(scoreProvider) + keysToRemove.length * 100;
+
     if (keysToRemove.isNotEmpty) {
       for (var key in keysToRemove) {
         removeEggKey(key);
@@ -112,10 +117,18 @@ class GameLogicService {
 
   void startTopLogTimer() {
     topTimer = Timer.periodic(const Duration(milliseconds: 2000), (t) {
+
       final pos = TopLogPosition.values[random.nextInt(TopLogPosition.values.length)];
       ref.read(quetzalRandomPos.notifier).state = pos;
-      Future.delayed(const Duration(milliseconds: 500), () {
+      eggPosTimer = Timer(const Duration(milliseconds: 500), () {
         addEggToField(pos.eggPos.toDouble());
+
+        if (ref.read(eggsCountProvider) == 0) {
+          eggPosTimer.cancel();
+          topTimer.cancel();
+          t.cancel();
+          return;
+        }
       });
     });
   }
@@ -147,7 +160,7 @@ class GameLogicService {
       ),
       ).animate(
         onComplete: (controller) {
-          //removeEggKey(posKey);
+          decreaseEggDropCount();
         },
       )
       .slideY(
@@ -159,11 +172,24 @@ class GameLogicService {
     addEgg(egg, posKey);
   }
 
+  void decreaseEggDropCount() {
+    if (gameStopped) {
+      return;
+    }
+
+    if (ref.read(eggsCountProvider) == 0) {
+      stopGame();
+    }
+
+    ref.read(eggsCountProvider.notifier).state = ref.read(eggsCountProvider) - 1;
+  }
+
   void startGame() {
+    initializeSettings();
     startGameLoop();
     startCountDown(() {
-        startTopLogTimer();
-        startGameTimer();
+      startTopLogTimer();
+      startGameTimer();
     });
   }
 
@@ -195,10 +221,68 @@ class GameLogicService {
   }
 
   void stopGame() {
+    gameStopped = true;
     stopGameLoop();
+    eggPosTimer.cancel();
     topTimer.cancel();
     gameTimer.cancel();
     countdown.cancel();
+    ref.read(eggsVMProvider.notifier).clearEggs();
+    ref.read(showCountdownProvider.notifier).state = false;
+
+    ref.read(finalGamePanelDisplayProvider.notifier).state = ref.read(eggsCountProvider) == 0 ? GameFinalPanelDisplay.losePanel : 
+      GameFinalPanelDisplay.winPanel;
   }
-  
+
+  void abortGame() {
+    if(gameStopped) {
+      return;
+    }
+
+    stopGame();
+    resetGame();
+  }
+
+  void resetGame() {
+    ref.read(eggsCountProvider.notifier).state = 5;
+    ref.read(scoreProvider.notifier).state = 0;
+    ref.read(gameTimerValueProvider.notifier).state = '00:00';
+    
+    ref.read(finalGamePanelDisplayProvider.notifier).state = GameFinalPanelDisplay.none;
+    Navigator.of(Utils.navKey.currentContext!).pop();
+  }
+
+  void initializeGame() {
+    ref.read(gameControllerServiceProvider).initialize();
+    ref.watch(gameActionsProvider.notifier).addListener((action) {
+      if (action == GameActions.start) {
+        Navigator.push(Utils.navKey.currentContext!, MaterialPageRoute(builder: (context) => const GamePage()));
+      }
+      else if (action == GameActions.back) {
+        abortGame();
+      }
+    });
+
+    initializeSettings();
+  }
+
+  void initializeSettings() {
+    loopTimer = Timer(0.seconds, () {});
+    topTimer = Timer(Duration.zero, () {});
+    eggPosTimer = Timer(Duration.zero, () {});
+    countdown = Timer(Duration.zero, () {});
+
+    gameTimer = Timer(Duration.zero, () {});
+    countdownValue = 7;
+    gameCountInSecs = 60;
+
+    nestKey = GlobalKey();
+    eggKeys = {};
+    positionEggKeys = [];
+    Future.delayed(0.seconds, () {
+      ref.read(eggsVMProvider.notifier).clearEggs();
+    });
+
+    gameStopped = false;
+  }
 }

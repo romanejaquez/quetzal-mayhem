@@ -19,7 +19,7 @@ class GameControllerService {
       
       var key = event!.key;
       
-      // print(event.key);
+      print(event.key);
       // print(event.value);
 
       if (key == 'KEYCODE_BUTTON_A') {
@@ -42,6 +42,9 @@ class GameControllerService {
       }
       else if (key == 'KEYCODE_BUTTON_START') {
         ref.read(gameActionsProvider.notifier).state = GameActions.start;
+      }
+      else if (key == 'KEYCODE_BACK') {
+        ref.read(gameActionsProvider.notifier).state = GameActions.back;
       }
       
     });

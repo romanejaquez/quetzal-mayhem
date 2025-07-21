@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:quetzalmayhem/providers/game_providers.dart';
 import 'package:quetzalmayhem/widgets/counter.dart';
 import 'package:quetzalmayhem/widgets/egg_field.dart';
+import 'package:quetzalmayhem/widgets/game_final_panel.dart';
 import 'package:quetzalmayhem/widgets/nest.dart';
 import 'package:quetzalmayhem/widgets/quetzal_top_log.dart';
 import 'package:rive/rive.dart';
@@ -65,6 +66,23 @@ class _GamePageState extends ConsumerState<GamePage> {
               return showCoundown ? Center(child: Counter()) : const SizedBox.shrink();
             }
           ),
+
+          Consumer(
+            builder: (context, ref, child) {
+              
+              final score = ref.watch(scoreProvider);
+              final panel = ref.watch(finalGamePanelDisplayProvider);
+
+              return panel != GameFinalPanelDisplay.none ? 
+                Center(
+                  child: GameFinalPanel(
+                    score: score,
+                    panel: panel,
+                  ),
+                ) : const SizedBox.shrink();
+
+            },
+          )
         ],
       ),
     );
