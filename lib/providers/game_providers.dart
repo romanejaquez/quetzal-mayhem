@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quetzalmayhem/models/enums.dart';
+import 'package:quetzalmayhem/services/eggs_viewmodel.dart';
 import 'package:quetzalmayhem/services/game_logic_service.dart';
 
 final gameActionsProvider = StateProvider<GameActions>((ref) => GameActions.none);
@@ -11,6 +13,8 @@ final gameTimerValueProvider = StateProvider<String>((ref) => '00:00');
 
 final eggsCountProvider = StateProvider<int>((ref) => 3);
 final scoreProvider = StateProvider<int>((ref) => 0);
+
+final eggsVMProvider = StateNotifierProvider<EggsViewmodel, List<Widget>>((ref) => EggsViewmodel());
 
 final eggRandomPosProvider = StateProvider<int>((ref) => -500);
 

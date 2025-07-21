@@ -19,8 +19,8 @@ class GameControllerService {
       
       var key = event!.key;
       
-      print(event.key);
-      print(event.value);
+      // print(event.key);
+      // print(event.value);
 
       if (key == 'KEYCODE_BUTTON_A') {
           

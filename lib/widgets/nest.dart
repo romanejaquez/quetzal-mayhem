@@ -25,7 +25,7 @@ class _NestState extends ConsumerState<Nest> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
 
-    //nestKey = ref.read(gameLogicProvider).nestKey;
+    nestKey = ref.read(gameLogicProvider).nestKey;
     nestWidth = widget.screenWidth / 4;
     ctrl = AnimationController(vsync: this, duration: Duration(seconds: 10));
     _leftPosition = (widget.screenWidth / 2) - (nestWidth / 2);
@@ -62,7 +62,7 @@ class _NestState extends ConsumerState<Nest> with SingleTickerProviderStateMixin
       bottom: 0,
       left: _leftPosition,
       child: SvgPicture.asset('./assets/images/nest.svg',
-        //key: nestKey,
+        key: nestKey,
         width: nestWidth,
         height: nestWidth / 2,
         fit: BoxFit.contain,

@@ -26,41 +26,7 @@ class _EggFieldState extends State<EggField> {
     return Consumer(
       builder: (context, ref, child) {
 
-        final eggPos = ref.watch(eggRandomPosProvider);
-        index++;
-        
-        eggs.add(Positioned(
-          key: ValueKey(index),
-          top: 100,
-          left: eggPos.toDouble(),
-          child: SizedBox(
-            child: SvgPicture.asset('./assets/images/egg.svg',
-              key: ValueKey('egg$index'),
-              width: 30,
-              height: 30,
-              fit: BoxFit.contain,
-            ).animate(
-              onComplete: (controller) {
-                controller.repeat();
-              },
-            )
-            .rotate(
-              begin: 0, end: 1,
-              duration: 1.seconds,
-              curve: Curves.linear,
-            )
-          ),
-          ).animate(
-            onComplete: (controller) {
-              eggs.removeWhere((e) => e.key == ValueKey(index));
-            },
-          )
-          .slideY(
-            begin: 0, end: 10,
-            curve: Curves.linear,
-            duration: 2.seconds,
-          ),
-        );
+        final eggs = ref.watch(eggsVMProvider);
 
         return Stack(
           children: eggs,
