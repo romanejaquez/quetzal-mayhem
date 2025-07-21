@@ -4,12 +4,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:quetzalmayhem/providers/game_providers.dart';
 import 'package:quetzalmayhem/widgets/counter.dart';
+import 'package:quetzalmayhem/widgets/egg_field.dart';
 import 'package:quetzalmayhem/widgets/nest.dart';
 import 'package:quetzalmayhem/widgets/quetzal_top_log.dart';
 import 'package:rive/rive.dart';
 
-class GamePage extends StatelessWidget {
+class GamePage extends ConsumerStatefulWidget {
   const GamePage({super.key});
+
+  @override
+  ConsumerState<GamePage> createState() => _GamePageState();
+}
+
+class _GamePageState extends ConsumerState<GamePage> {
+
+  @override 
+  void initState() {
+    super.initState();
+
+    ref.read(gameLogicProvider).startGame();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,36 +53,18 @@ class GamePage extends StatelessWidget {
             child: QuetzalTopLog(),
           ),
 
-          Nest(),
-
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Consumer(
-              builder: (context, ref, child) {
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      child: Text('<'),
-                      onPressed: () {
-                        ref.read(nestValueProvider.notifier).state -= 20;
-                      },
-                    ),
-
-                    TextButton(
-                      child: Text('>'),
-                      onPressed: () {
-                        ref.read(nestValueProvider.notifier).state += 20;
-                      },
-                    ),
-                  ],
-                );
-              }
-            ),
+          Nest(
+            screenWidth: MediaQuery.of(context).size.width,
           ),
 
-          Center(child: Counter()),
+          EggField(),
+
+          Consumer(
+            builder: (context, ref, child) {
+              final showCoundown = ref.watch(showCountdownProvider);
+              return showCoundown ? Center(child: Counter()) : const SizedBox.shrink();
+            }
+          ),
         ],
       ),
     );

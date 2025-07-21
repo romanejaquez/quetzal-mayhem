@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quetzalmayhem/models/enums.dart';
+import 'package:quetzalmayhem/providers/game_providers.dart';
 import 'package:rive/rive.dart';
 
-class QuetzalTopLog extends StatefulWidget {
+class QuetzalTopLog extends ConsumerStatefulWidget {
   const QuetzalTopLog({super.key});
 
   @override
-  State<QuetzalTopLog> createState() => _QuetzalTopLogState();
+  ConsumerState<QuetzalTopLog> createState() => _QuetzalTopLogState();
 }
 
-class _QuetzalTopLogState extends State<QuetzalTopLog> {
+class _QuetzalTopLogState extends ConsumerState<QuetzalTopLog> {
 
   late RiveAnimation animation;
   late StateMachineController ctrl;
   Map<TopLogPosition, SMITrigger> triggers = {};
   bool isLoaded = false;
+  late TextValueRun eggs;
+  late TextValueRun score;
+  late TextValueRun time;
 
   @override
   void initState() {
@@ -28,12 +33,17 @@ class _QuetzalTopLogState extends State<QuetzalTopLog> {
   }
   
   void onRiveInit(Artboard artboard) {
+
     ctrl = StateMachineController.fromArtboard(artboard, 'topgamelog')!;
     artboard.addController(ctrl);
 
     for(var position in TopLogPosition.values) {
       triggers[position] = ctrl.getTriggerInput(position.name)!;
     }
+
+    eggs = artboard.component<TextValueRun>('eggs') as TextValueRun;
+    score = artboard.component<TextValueRun>('score') as TextValueRun;
+    time = artboard.component<TextValueRun>('time') as TextValueRun;
 
     setState(() {
       isLoaded = true;
@@ -43,16 +53,25 @@ class _QuetzalTopLogState extends State<QuetzalTopLog> {
   @override
   Widget build(BuildContext context) {
 
-    if (isLoaded) {
-      Future.delayed(const Duration(seconds: 2), () {
-        triggers[TopLogPosition.pos1]!.fire();
-      });
+    return Consumer(
+      builder: (context, ref, child) {
+      
+        final quetzalPos = ref.watch(quetzalRandomPos);
+        final timeValue = ref.watch(gameTimerValueProvider);
+        final eggsValue = ref.watch(eggsCountProvider);
+        final scoreValue = ref.watch(scoreProvider);
 
-      Future.delayed(const Duration(seconds: 4), () {
-        triggers[TopLogPosition.pos2]!.fire();
-      });
-    }
 
-    return animation;
+        if (isLoaded) {
+          triggers[quetzalPos]!.fire();
+          time.text = timeValue;
+          eggs.text = eggsValue.toString();
+          score.text = scoreValue.toString();
+        }
+
+        return SizedBox(
+          child: animation);
+      },
+    );
   }
 }
