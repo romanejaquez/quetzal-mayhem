@@ -177,11 +177,11 @@ class GameLogicService {
       return;
     }
 
+    ref.read(eggsCountProvider.notifier).state = ref.read(eggsCountProvider) - 1;
+
     if (ref.read(eggsCountProvider) == 0) {
       stopGame();
     }
-
-    ref.read(eggsCountProvider.notifier).state = ref.read(eggsCountProvider) - 1;
   }
 
   void startGame() {
@@ -230,8 +230,8 @@ class GameLogicService {
     ref.read(eggsVMProvider.notifier).clearEggs();
     ref.read(showCountdownProvider.notifier).state = false;
 
-    ref.read(finalGamePanelDisplayProvider.notifier).state = ref.read(eggsCountProvider) == 0 ? GameFinalPanelDisplay.losePanel : 
-      GameFinalPanelDisplay.winPanel;
+    ref.read(finalGamePanelDisplayProvider.notifier).state = ref.read(eggsCountProvider) == 0 ? GameFinalPanelDisplay.winPanel : 
+      GameFinalPanelDisplay.losePanel;
   }
 
   void abortGame() {
