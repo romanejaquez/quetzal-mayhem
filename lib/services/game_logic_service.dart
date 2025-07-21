@@ -15,7 +15,7 @@ import 'package:quetzalmayhem/services/utils.dart';
 class GameLogicService {
 
   final Ref ref;
-  bool _initialized = false;
+  bool initialized = false;
   bool gameStopped = false;
   
   GameLogicService(this.ref);
@@ -103,7 +103,7 @@ class GameLogicService {
     Future.delayed(Duration.zero, () {
       ref.read(showCountdownProvider.notifier).state = true;
     });
-    Timer.periodic(const Duration(seconds: 1), (t) {
+    countdown = Timer.periodic(const Duration(seconds: 1), (t) {
       countdownValue--;
       if (countdownValue == 0) {
         Future.delayed(Duration.zero, () {
@@ -253,17 +253,20 @@ class GameLogicService {
   }
 
   void initializeGame() {
-    ref.read(gameControllerServiceProvider).initialize();
-    ref.watch(gameActionsProvider.notifier).addListener((action) {
-      if (action == GameActions.start) {
-        Navigator.push(Utils.navKey.currentContext!, MaterialPageRoute(builder: (context) => const GamePage()));
-      }
-      else if (action == GameActions.back) {
-        abortGame();
-      }
-    });
+    if (!initialized) {
+      ref.read(gameControllerServiceProvider).initialize();
+      ref.watch(gameActionsProvider.notifier).addListener((action) {
+        if (action == GameActions.start) {
+          Navigator.push(Utils.navKey.currentContext!, MaterialPageRoute(builder: (context) => const GamePage()));
+        }
+        else if (action == GameActions.back) {
+          abortGame();
+        }
+      });
 
-    initializeSettings();
+      initializeSettings();
+      initialized = true;
+    }
   }
 
   void initializeSettings() {
